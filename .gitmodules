@@ -1,0 +1,3 @@
+[submodule "4.Firmware/2.Bootloader/sunxi_uboot"]
+	path = 4.Firmware/2.Bootloader/sunxi_uboot
+	url = git@github.com:NingbinWang/sunxi_uboot.git
