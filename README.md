@@ -11,7 +11,11 @@
 - [ 环境准备](#head9)
 	- [ 安装依赖软件](#head10)
 	- [ 安装编译工具链](#head11)
-- [ bootloader与kernel的移植](#head12)
+	- [ 如何编译](#head12)
+- [ bootloader与kernel的移植](#head13)
+- [ rootfs的制作](#head14)
+
+
 
 # <span id="head1"> 项目简介 </span>
 这个项目是在CherryPi-F1C200S上开发，后续仍会自己设计硬件，目标会将其转换成邮票核心板,底板自行设计一个带摄像头，Gsensor,并带SPI小型屏幕与GPS的核心开发板，支持语音识别功能,并将剩余的GPIO用FPC连接，让极客们自己去设计，增加板子的可玩性。
@@ -91,9 +95,58 @@ Cherry F1C200S采用全志F1C200S ARM926EJ-S内核处理器，片内自带64MB S
 > sudo apt-get install xz-utils vim wget unzip build-essential git bc swig libncurses5-dev libpython3-dev libssl-dev pkg-config zlib1g-dev libusb-dev libusb-1.0-0-dev python3-pip gawk bison flex 
 
 ## <span id="head11"> 安装编译工具链 </span>
+主要是要将前面下载的开发工具链进行解压，并赋值到全局环境变量中，当然你也可以不使用全局环境变量，指定编译器的路径也是可以的。
 
-# <span id="head12"> bootloader与kernel的移植 </span>
+下载交叉编译链：
+
+> wget http://releases.linaro.org/components/toolchain/binaries/7.2-2017.11/arm-linux-gnueabi/gcc-linaro-7.2.1-2017.11-x86_64_arm-linux-gnueabi.tar.xz
+ 
+ **注意：** GCC版本要大于 6；此处为获取交叉编译链为7.2.1版本，也可以自行下载其他版本。
+
+将工具链压缩包解压
+
+> mkdir /home/toolchain
+> tar -vxf gcc-linaro-7.2.1-2017.11-x86_64_arm-linux-gnueabi.tar.xz -C /home/toolchain
+
+配置环境变量：
+
+> nano  ~/.bashrc
+
+打开文件添加下面的变量：
+
+> export PATH=$PATH:/home/toolchain/gcc-linaro-7.2.1-2017.11-x86_64_arm-linux-gnueabi/bin
+
+使环境变量立即生效:
+
+>source ~/.bashrc 
+
+查询版本，确认安装成功 ：
+
+> arm-linux-gnueabi-gcc -v
+
+## <span id="head12"> 如何编译 </span>
+
+进入源码目录, 执行下述命令进行编译:
+
+> make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-
+
+在uboot顶层Makefile的250行左右，添加默认编译器，就可以直接用**make**编译省去后面的参数了:
+
+>ifeq ($(HOSTARCH),$(ARCH))
+>CROSS_COMPILE ?= 
+>endif
+>
+>ARCH ?= arm
+>CROSS_COMPILE ?= arm-linux-gnueabi-
+
+内核编译也是同理。
+
+# <span id="head13"> bootloader与kernel的移植 </span>
 此部分主要可以去看4.Firmware中的README，里面会详细介绍整个的移植过程，并且代码都会开源的。
+
+# <span id="head13"> rootfs的制作 </span>
+
+使用debin的ubuntu core作为内核的rootfs
 
 # 硬件设计
 后续的设计：
