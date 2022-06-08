@@ -1,8 +1,0 @@
-[submodule "4.Firmware/2.Bootloader/sunxi_uboot"]
-	path = 4.Firmware/2.Bootloader/sunxi_uboot
-	url = git@github.com:NingbinWang/sunxi_uboot.git
-	branch = main
-[submodule "4.Firmware/3.Kernel/sunxi_kernel"]
-	path = 4.Firmware/3.Kernel/sunxi_kernel
-	url = git@github.com:NingbinWang/sunxi_kernel.git
-	branch = main
