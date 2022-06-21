@@ -6,7 +6,7 @@
 固件路径如下：
 * [bootloader](https://github.com/NingbinWang/sunxi_uboot)
 * [kernel](https://github.com/NingbinWang/sunxi_kernel)
-* [yocto](https://github.com/NingbinWang/sunxi_yocto)
+* [yocto](https://github.com/NingbinWang/sunxi_yocto) 暂时不研究yocto
 
 因为支持nand flash，那么在支持128M nand flash的前提下，我将修改分区表
 
@@ -83,5 +83,40 @@ arch移植主要修改于arch/arm/cpu/arm926ejs里面的内容。
 目前不知道为何blk_uclass所在的dev_num无法匹配起来导致，MMC一直异常。
 
 # kernel的移植
+
+# rootfs的移植
+Linux的目录结构的最顶层是一个“/”的根目录，系统加载linux内核之后，就会挂载一个设备到根目录上。
+存在与这个设备中的文件系统被称为根文件系统。所有的系统命令、系统配置以及其他文件系统的挂载点都位于这个根文件系统中。
+本文的根文件系统存在于flash中。
+
+以下为根文件系统顶层目录结构图
+
+```
+.
+├── /            //根目录
+│   ├──bin       //基本命令的可执行文件
+│   ├──boot      //内核映像已经启动时需要用到的一些文件
+│   ├──dev       //设备文件
+│   ├──etc       //系统配置文件，包含启动文件
+│   ├──home      //用户目录
+│   ├──lib        //基础库，例如C库和内核模块
+│   ├──lost+found  //在文件系统修复时的恢复文件
+│   ├──mnt          //临时文件系统的挂载点
+│   ├──nfsroot     //nfs文件夹，一般不使用
+│   ├──opt         //添加的软件包
+│   ├──proc        //内核以及进程信息的虚拟文件系统
+│   ├──root        //root用户目录
+│   ├──sbin        //用于系统管理的可执行程序
+│   ├──share       //共享文件目录
+│   ├──sys         //系统设备和文件层次结构，向用户提供详细的内核数据信息
+│   ├──tmp         //临时文件
+│   ├──usr         //该目录的二级目录包含许多对用户很有用的应用程序和文旦
+│   ├──var         //存放系统日志或一些服务程序的临时文件
+
+```
+
+## 利用busybox制作根文件系统
+
+
 
 # yocto构建与移植
