@@ -1,5 +1,5 @@
 # Tools的使用
-这里主要是告知如何使用这些软件的
+这里主要是Windows下是如何进行烧录的
 
 # 程序烧录
 
@@ -28,7 +28,7 @@ sunxi-fel使用时必须在命令行下，例如可以安装个git工具（https
 此部分会用到dfu-util.exe
 
 1. 让模块处于FEL模式。
-2. 运行from-fel-to-dfu.bat脚本，双击运行。或者在Windows命令行运行脚	本中的命令。
+2. 运行from-fel-to-dfu.bat脚本，双击运行。或者在Windows命令行运行脚本中的命令。
 3. 此时，模块会打印一些log，当看到这些时，表明模块已处于DFU模式。
 4. 会在设备管理中看到USB download gadget
 5. 准备好NAND镜像，然后在Windows命令行中通过如下命令刷机
@@ -39,7 +39,3 @@ sunxi-fel使用时必须在命令行下，例如可以安装个git工具（https
 准备一张TF卡和读卡器接到电脑上，打开Win32DiskImager软件，选择相应的镜像文件，点击Write开始烧写
 
 ![](/1.Docs/3.Images/windisk.png)
-
-这个工具基本应该是人人都会的。
-
-# 参考
