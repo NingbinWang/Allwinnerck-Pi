@@ -13,9 +13,14 @@
 	- [ 安装编译工具链](#head11)
 	- [ 如何编译](#head12)
 - [ bootloader与kernel的移植](#head13)
-- [ rootfs的制作](#head14)
-
-
+- [ 固件烧录](#head14)
+	- [ TF卡烧录模式](#head15)
+	- [ Windows烧录模式](#head16)
+- [ 构建rootfs](#head17)
+	- [ 构建Debian文件系统](#head18)
+	- [ 使用buildroot构建文件系统](#head19)
+	- [ 构建yocta文件系统](#head20)
+- [ 新硬件设计](#head21)
 
 # <span id="head1"> 项目简介 </span>
 这个项目是在CherryPi-F1C200S上开发，后续仍会自己设计硬件，目标会将其转换成邮票核心板,底板自行设计一个带摄像头，Gsensor,并带SPI小型屏幕与GPS的核心开发板，支持语音识别功能,并将剩余的GPIO用FPC连接，让极客们自己去设计，增加板子的可玩性。
@@ -142,13 +147,11 @@ Cherry F1C200S采用全志F1C200S ARM926EJ-S内核处理器，片内自带64MB S
 内核编译也是同理。
 
 # <span id="head13"> bootloader与kernel的移植 </span>
-此部分主要可以去看4.Firmware中的README，里面会详细介绍整个的移植过程，并且代码都会开源的。
+此部分主要可以去看4.Firmware中的README，里面会详细介绍整个的移植过程，并且代码都已经开源的。
 
-# <span id="head13"> rootfs的制作 </span>
+# <span id="head14"> 固件烧录 </span>
 
-## 以debian为rootfs
-
-这里主要是介绍TF卡的烧录模式
+## <span id="head15"> TF卡烧录模式 </span>
 
 在虚拟机中直接使用GParted等软件图形化进行分区与格式化
 ![](/1.Docs/3.Images/GPared.png)
@@ -198,6 +201,7 @@ sudo fdisk /dev/sdb
 	>
 	> * w 保存写入并退出
 
+
 分区格式化：
 
 ```
@@ -223,7 +227,18 @@ sync
 
 > **注意：**这里的`bs=1024 seek=8`是添加了8192字节的偏移，之所以要加8K偏移是因为FSBL也就是bootROM里面硬写死了会从设备的8K地址处加载SPL，然后进入uboot。因此上面烧写的时候，指定的偏移地址一定是**相对于储存设备硬件的偏移，而不是相对于分区的偏移**！
 
-### 构建Debian文件系统
+然后将rootfs整个拷贝到sdb3中即可完成烧录
+
+## <span id="head16"> Windows烧录模式 </span>
+
+全志还提供一套在windows下的烧录方案：
+
+具体可以到本项目的tools目录下查看具体的使用方法。
+
+# <span id="head17"> 构建rootfs </span>
+
+## <span id="head18"> 构建Debian文件系统 </span>
+
 构建文件系统之前，需要知道我们想要构建哪个版本的文件系统，这里从[Debian 全球镜像站](https://www.debian.org/mirror/list.zh-cn.html)选择访问速度快的源，这里使用华为源：mirrors.huaweicloud.com。
 
 > **注意：**选择的源需要支持硬件架构`armel`，因为F1Cxxxs是`armel`架构的芯片。
@@ -317,7 +332,7 @@ ln -s /etc/init.d/runOnBoot /etc/rc2.d/S99runOnBoot
 
 重启即可看到命令和脚本自动执行了。
 
-#### 解决root-fs分区开机后被挂载为*Read-Only*的问题
+### 解决root-fs分区开机后被挂载为*Read-Only*的问题
 
 新配置的文件系统需要添加fstab进行对应分区的自动挂载，修改`/etc/fstab`文件：
 
@@ -342,7 +357,7 @@ nano /etc/resolv.conf
 nameserver 8.8.8.8
 ```
 
-#### 启用swap
+### 启用swap
 
 芯片的SiP内存只有64MB，大部分情况下都不够用，所以需要开启swap使用内存卡的一部分空间来作为交换内存。
 
@@ -387,7 +402,7 @@ nano /etc/fstab
 /opt/images/swap swap swap defaults 0 0
 ```
 
-#### 部署
+### 部署
 直接插上SD卡拷贝所有文件（需要在VMware宿主机打开终端操作），在挂载的SD卡root-fs磁盘打开终端，输入：
 
 ```
@@ -396,7 +411,7 @@ sudo cp -Rf path/to/rootfs-debian/* ./
 ```
 
 
-## buildroot制作rootfs放在spiflash中
+## 使用buildroot构建文件系统
 
 
 
