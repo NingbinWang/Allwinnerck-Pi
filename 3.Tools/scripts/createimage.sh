@@ -24,12 +24,16 @@ ${STARTDIR}/${OUTPUT_DIR}/${MKIMAGE} -f ${IMAGE_ITS} zImage.bin
 ${STARTDIR}/mknanduboot.sh ${STARTDIR}/${OUTPUT_DIR}/u-boot-sunxi-with-spl.bin ${STARTDIR}/${OUTPUT_DIR}/u-boot-sunxi-with-nand-spl.bin
 
 
-mkdir  ${STARTDIR}/${OUTPUT_DIR}/rootfs
-tar -xvf ${STARTDIR}/image/rootfs.tar -C ${STARTDIR}/${OUTPUT_DIR}/rootfs
-cd ${STARTDIR}/${OUTPUT_DIR} 
-mksquashfs ${STARTDIR}/${OUTPUT_DIR}/rootfs rootfs.bin -b 64k -comp xz
-rm ${STARTDIR}/${OUTPUT_DIR}/rootfs -rf
+#mkdir  ${STARTDIR}/${OUTPUT_DIR}/rootfs
+#tar -xvf ${STARTDIR}/image/rootfs.tar -C ${STARTDIR}/${OUTPUT_DIR}/rootfs
+#cd ${STARTDIR}/${OUTPUT_DIR} 
+#mksquashfs ${STARTDIR}/${OUTPUT_DIR}/rootfs rootfs.bin -b 64k -comp xz
+#rm ${STARTDIR}/${OUTPUT_DIR}/rootfs -rf
+cp ${STARTDIR}/image/rootfs.squashfs ${STARTDIR}/${OUTPUT_DIR}/rootfs.bin
+
+
 mkdir  ${STARTDIR}/${OUTPUT_DIR}/sys
+cp ${STARTDIR}/image/*.ko ${STARTDIR}/${OUTPUT_DIR}/sys -rf
 mksquashfs ${STARTDIR}/${OUTPUT_DIR}/sys sys.bin -b 64k -comp xz
 rm ${STARTDIR}/${OUTPUT_DIR}/sys -rf
 

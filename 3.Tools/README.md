@@ -39,3 +39,23 @@ sunxi-fel使用时必须在命令行下，例如可以安装个git工具（https
 准备一张TF卡和读卡器接到电脑上，打开Win32DiskImager软件，选择相应的镜像文件，点击Write开始烧写
 
 ![](/1.Docs/3.Images/windisk.png)
+
+## 固件制作
+直接执行scripts中的createimage.sh即可，主要在windows下，同时还需要lib库。
+
+具体可参考
+
+https://github.com/pengutronix/genimage
+
+实际需要编译的
+
+https://github.com/libconfuse/libconfuse
+
+
+> tar xf confuse-3.2.2.tar.xz
+
+> cd confuse-3.2.2/
+
+> ./configure && make -j9
+
+> sudo make install

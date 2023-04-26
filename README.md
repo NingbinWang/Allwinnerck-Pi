@@ -410,23 +410,28 @@ cd /media/xxx/rootfs/
 sudo cp -Rf path/to/rootfs-debian/* ./
 ```
 
+## <span id="head19"> 使用buildroot构建文件系统 </span>
+目前已经在3.Tools\scripts下提供了createimage.sh的脚本（直接执行即可），可供大家直接生成nand专用的image包，用于DFU的下载，同时在此，提供了最新编译出来的KO等
+具体请自行去相关的uboot与kernel部分的提交
 
-## 使用buildroot构建文件系统
+这里主要需要注意的是：
+	1.uboot.env与kernel.its的boot区不要重复了
 
+# 部分后续工作
+1.支持sensor的功能
+2.支持录音的功能
+3.支持LCD输出功能
+4.支持gsensor的功能
+5.用于验证DeepChappie
+6.buildroot自制的rootfs仍有问题，根据网上说是交叉编译链的问题，细查此项问题。
 
 
 
 # 硬件设计
-后续的设计：
-1. 核心板邮票式接口
-2. LCD换成SPI屏幕
-3. 添加Gsensor
-4. 添加GPS
 
 
 
 # 软件设计
-1.ISP的接入
-2.SD卡录像记录
+
 
 # 参考
