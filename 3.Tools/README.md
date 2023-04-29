@@ -41,7 +41,12 @@ sunxi-fel使用时必须在命令行下，例如可以安装个git工具（https
 ![](/1.Docs/3.Images/windisk.png)
 
 ## 固件制作
-直接执行scripts中的createimage.sh即可，主要在windows下，同时还需要lib库。
+直接执行scripts中的createimage.sh即可
+
+需要在linux环境执行
+
+当然哈，我也为大家提供了相关的lib在scripts 直接拷贝到自己环境中的lib即可
+
 
 具体可参考
 

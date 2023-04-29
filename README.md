@@ -416,22 +416,16 @@ sudo cp -Rf path/to/rootfs-debian/* ./
 
 这里主要需要注意的是：
 	1.uboot.env与kernel.its的boot区不要重复了
+	
+这里需要注意建造自己的buildroot的rootfs，可以在firemware中自行解压并使用我的原生的defconfig即可。
 
 # 部分后续工作
 1.支持sensor的功能
+
 2.支持录音的功能
+
 3.支持LCD输出功能
+
 4.支持gsensor的功能
+
 5.用于验证DeepChappie
-6.buildroot自制的rootfs仍有问题，根据网上说是交叉编译链的问题，细查此项问题。
-
-
-
-# 硬件设计
-
-
-
-# 软件设计
-
-
-# 参考

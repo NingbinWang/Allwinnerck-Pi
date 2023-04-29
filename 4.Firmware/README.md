@@ -57,11 +57,6 @@ uboot的相关代码架构如下：
 ├── scripts 
 ├── tools
 ```
-## 移植arch
-arch移植主要修改于arch/arm/cpu/arm926ejs里面的内容。
-
-
-## 遗留问题
-目前不知道为何blk_uclass所在的dev_num无法匹配起来导致，MMC一直异常。
 
 # kernel的移植
+内核的移植，主要关注相关的patch即可
