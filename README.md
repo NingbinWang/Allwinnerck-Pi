@@ -1,26 +1,29 @@
 # Allwinnerck-pi
 
-- [ 项目简介](#head1)
-	- [ 开发板介绍](#head2)
-		- [开发板功能介绍](#head3)
-		- [开发板的外观](#head4)
-	- [ 芯片架构](#head5)
-- [ 基础知识](#head6)
-		- [ F1Cxxxs芯片的上电启动顺序](#head7)
-		- [ 开发工具链下载](#head8)
-- [ 环境准备](#head9)
-	- [ 安装依赖软件](#head10)
-	- [ 安装编译工具链](#head11)
-	- [ 如何编译](#head12)
-- [ bootloader与kernel的移植](#head13)
-- [ 固件烧录](#head14)
-	- [ TF卡烧录模式](#head15)
-	- [ Windows烧录模式](#head16)
-- [ 构建rootfs](#head17)
-	- [ 构建Debian文件系统](#head18)
-	- [ 使用buildroot构建文件系统](#head19)
-	- [ 构建yocta文件系统](#head20)
-- [ 新硬件设计](#head21)
+- [Allwinnerck-pi](#allwinnerck-pi)
+- [ 项目简介 ](#-项目简介-)
+	- [ 开发板介绍 ](#-开发板介绍-)
+		- [ 开发板功能介绍 ](#-开发板功能介绍-)
+		- [ 开发板的外观 ](#-开发板的外观-)
+	- [ 芯片架构 ](#-芯片架构-)
+- [ 基础知识 ](#-基础知识-)
+	- [ F1Cxxxs芯片的上电启动顺序 ](#-f1cxxxs芯片的上电启动顺序-)
+	- [ 开发工具链下载 ](#-开发工具链下载-)
+- [ 环境准备 ](#-环境准备-)
+	- [ 安装依赖软件 ](#-安装依赖软件-)
+	- [ 安装编译工具链 ](#-安装编译工具链-)
+	- [ 如何编译 ](#-如何编译-)
+- [ bootloader与kernel的移植 ](#-bootloader与kernel的移植-)
+- [ 固件烧录 ](#-固件烧录-)
+	- [ TF卡烧录模式 ](#-tf卡烧录模式-)
+	- [ Windows烧录模式 ](#-windows烧录模式-)
+- [ 构建rootfs ](#-构建rootfs-)
+	- [ 构建Debian文件系统 ](#-构建debian文件系统-)
+		- [解决root-fs分区开机后被挂载为*Read-Only*的问题](#解决root-fs分区开机后被挂载为read-only的问题)
+		- [启用swap](#启用swap)
+		- [部署](#部署)
+	- [ 使用buildroot构建文件系统 ](#-使用buildroot构建文件系统-)
+- [部分后续工作](#部分后续工作)
 
 # <span id="head1"> 项目简介 </span>
 这个项目是在CherryPi-F1C200S上开发，后续仍会自己设计硬件，目标会将其转换成邮票核心板,底板自行设计一个带摄像头，Gsensor,并带SPI小型屏幕与GPS的核心开发板，支持语音识别功能,并将剩余的GPIO用FPC连接，让极客们自己去设计，增加板子的可玩性。
@@ -205,15 +208,14 @@ sudo fdisk /dev/sdb
 分区格式化：
 
 ```
-sudo mkfs.vfat /dev/sdb1 # 将第1分区格式化成FAT
 sudo mkfs.vfat /dev/sdb2 # 将第2分区格式化成FAT  
 sudo mkfs.ext4 /dev/sdb3 # 将第3分区格式化成EXT4
 ```
+这里不需要格式化第一个sdb1，只是为了让uboot可以被烧录
 
 > **格式说明：**
 >
 > * EXT4：只用于Linux系统的内部磁盘
-> * NTFS：与Windows共用的磁盘
 > * FAT：所有系统和设备共用的磁盘
 
 这里就需要大家将kernel中的设备树放到sdb2中，还有kernel中生成的zImage(在/arch/arm/boot/里面找)也拷贝进去。
@@ -249,7 +251,7 @@ sync
 > - **armhf：**`arm hard float`的缩写，仅适用于较新的 32 位 ARM 处理器，其至少实现了 ARMv7 架构，且支持 ARM 矢量浮点规范（VFPv3）第 3 版
 > - **arm64：**适用于 64 位 ARM 处理器，64位的arm默认就是hf的，其至少实现了 ARMv8 架构
 
-然后就是debian的版本，使用最新的`buster`：
+然后就是debian的版本，使用是`buster`：
 
 ```
 debootstrap --foreign --verbose --arch=armel  buster rootfs-debian http://mirrors.huaweicloud.com/debian/
@@ -292,6 +294,7 @@ nano /etc/ssh/sshd_config
 
 #------------------------------------------------------------------------------
 swapon /opt/images/swap
+/etc/init.d/initko.sh
 
 mkdir /sys/kernel/config/usb_gadget/gg
 cd /sys/kernel/config/usb_gadget/gg
@@ -331,6 +334,19 @@ ln -s /etc/init.d/runOnBoot /etc/rc2.d/S99runOnBoot
 > `/etc/rc.d/rc0.d/`～`/etc/rc.d/rc6.d/`文件夹的含义不同，S开头代表是开启时处理的脚本，按照后面紧跟的数字进行按顺序启动，S99则是最后进行启动。
 
 重启即可看到命令和脚本自动执行了。
+
+创建一个文件`/etc/init.d/initko.sh`
+
+一般来讲我们会修改defconfig产生不同的内核配置，然后再加载驱动
+可以将所有的相关驱动全部放到sdb2对应的fat32文件夹中，用insmod进行加载
+```
+#!/bin/sh /etc/init.d/initko.sh
+mkdir /mnt/mmc02
+mount -t vfat /dev/mmcblk0p2 /mnt/mmc02
+cd /mnt/mmc02
+insmod xxxxx.ko
+```
+xxxxx可以将内核中的所有的驱动全部带上
 
 ### 解决root-fs分区开机后被挂载为*Read-Only*的问题
 
@@ -402,8 +418,55 @@ nano /etc/fstab
 /opt/images/swap swap swap defaults 0 0
 ```
 
+在本开发板中，可以利用USB Gadget把USB模拟成虚拟网卡、虚拟串口、MTP设备等等非常方便，下面介绍具体的配置方法。
+
+RNDIS功能开发方法：
+
+首先需要在内核中开启了相关选项：
+```
+ Device Drivers  --->
+        [*] USB support  --->
+        <M> Inventra Highspeed Dual Role Controller (TI, ADI, AW, ...)
+                MUSB Mode Selection (Dual Role mode)  --->
+                *** Platform Glue Layer ***
+            <M> Allwinner (sunxi)
+                *** MUSB DMA mode ***
+            [*] Disable DMA (always use PIO)
+        USB Physical Layer drivers  --->
+            <M> NOP USB Transceiver Driver
+        <M>   USB Gadget Support  --->
+            <M>   USB Gadget functions configurable through configfs
+            [*]     RNDIS
+```
+然后在文件系统中添加一些配置文件：
+
+```
+cd /sys/kernel/config/usb_gadget
+mkdir gg
+cd gg/
+echo "0x0502" > idVendor
+echo "0x3235" > idProduct
+mkdir functions/rndis.rn0
+mkdir configs/c1.1
+ln -s functions/rndis.rn0 configs/c1.1/
+echo "musb-hdrc.1.auto" > UDC
+启用usb0网卡并设置一个ip地址：
+
+ifconfig usb0 192.168.137.2
+ifconfig usb0 up
+```
+
+这里使用137网段的原因是希望后面通过Windows的网络共享功能让板卡通过USB连上互联网，而Windows的共享网段固定是192.168.137.1 。
+
+在Windows端安装驱动，手动选择网络适配器，然后添加下面的驱动：
+![](/1.Docs/3.Images/rnids.png)
+
+之后用共享网络，你的板子就可以上网了。
+![](/1.Docs/3.Images/rnids2.png)
+
+
 ### 部署
-直接插上SD卡拷贝所有文件（需要在VMware宿主机打开终端操作），在挂载的SD卡root-fs磁盘打开终端，输入：
+直接插上SD卡拷贝所有文件，在挂载的SD卡root-fs磁盘打开终端，输入：
 
 ```
 cd /media/xxx/rootfs/
@@ -420,12 +483,4 @@ sudo cp -Rf path/to/rootfs-debian/* ./
 这里需要注意建造自己的buildroot的rootfs，可以在firemware中自行解压并使用我的原生的defconfig即可。
 
 # 部分后续工作
-1.支持sensor的功能
-
-2.支持录音的功能
-
-3.支持LCD输出功能
-
-4.支持gsensor的功能
-
-5.用于验证DeepChappie
+1.支持LCD
