@@ -4,7 +4,7 @@
 固件路径如下：
 * [bootloader](https://github.com/NingbinWang/sunxi_uboot)
 * [kernel](https://github.com/NingbinWang/sunxi_kernel)
-* [yocto](https://github.com/NingbinWang/sunxi_yocto) 暂时不研究yocto
+* [yocto](https://github.com/NingbinWang/sunxi_yocto) 暂时不研究yocto，本项目尚未常见
 
 
 
@@ -58,5 +58,45 @@ uboot的相关代码架构如下：
 ├── tools
 ```
 
+## 编译
+编译脚本：
+```
+#!/bin/bash
+set -e
+STARTDIR=`pwd`
+SELFDIR=`dirname \`realpath ${0}\``
+UBOOT_DIR=${STARTDIR}/sunxi_uboot
+CROSSCOMPELITE_DIR=${STARTDIR}/gcc-linaro-7.2.1-2017.11-x86_64_arm-linux-gnueabi/bin
+TARGET_CROSS_HOST=arm-linux-gnueabi
+TARGET_CROSS_COMPILE=${CROSSCOMPELITE_DIR}/${TARGET_CROSS_HOST}-
+cd ${UBOOT_DIR}
+make $1 CROSS_COMPILE=${TARGET_CROSS_COMPILE}
+```
+
 # kernel的移植
-内核的移植，主要关注相关的patch即可
+这里的各个移植比较繁琐，在项目中不详细说明了，后续请关注[博客](https://www.cnblogs.com/samuelwnb/)
+
+## 编译
+编译脚本：
+```
+#!/bin/bash
+set -e
+STARTDIR=`pwd`
+SELFDIR=`dirname \`realpath ${0}\``
+KERNEL_DIR=${STARTDIR}/sunxi_kernel
+OUTPUT_DIR=${STARTDIR}/kernel_output
+MODS_DIR=${OUTPUT_DIR}/mods/
+CROSSCOMPELITE_DIR=${STARTDIR}/gcc-linaro-7.2.1-2017.11-x86_64_arm-linux-gnueabi/bin
+TARGET_CROSS_HOST=arm-linux-gnueabi
+TARGET_CROSS_COMPILE=${CROSSCOMPELITE_DIR}/${TARGET_CROSS_HOST}-
+
+if [ ! -e ${OUTPUT_DIR} ]; then \
+		mkdir ${OUTPUT_DIR}; \
+		mkdir ${MODS_DIR}; \
+fi
+cd ${KERNEL_DIR}
+#cp ./arch/arm/configs/allwinnerck_pi_defconfig ./.config
+make $1 CROSS_COMPILE=${TARGET_CROSS_COMPILE} INSTALL_MOD_PATH=${MODS_DIR} INSTALL_MOD_STRIP=1
+```
+
+这里说明一下 INSTALL_MOD_PATH 只有在 该脚本后面带**modules_install**才生效
