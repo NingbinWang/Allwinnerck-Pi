@@ -343,8 +343,16 @@ ln -s /etc/init.d/runOnBoot /etc/rc2.d/S99runOnBoot
 #!/bin/sh /etc/init.d/initko.sh
 mkdir /mnt/mmc02
 mount -t vfat /dev/mmcblk0p2 /mnt/mmc02
-cd /mnt/mmc02
-insmod xxxxx.ko
+cd /mnt/mmc02/drviers
+insmod usb/core/usbcore.ko
+insmod phy/allwinner/phy-sun4i-usb.ko
+insmod usb/gadget/udc/udc-core.ko
+insmod usb/gadget/libcomposite.ko
+insmod usb/gadget/function/u_ether.ko
+insmod usb/gadget/function/usb_f_rndis.ko
+insmod usb/phy/phy-generic.ko
+insmod usb/musb/musb_hdrc.ko
+insmod usb/musb/sunxi.ko
 ```
 xxxxx可以将内核中的所有的驱动全部带上
 
@@ -462,6 +470,7 @@ ifconfig usb0 up
 ![](/1.Docs/3.Images/rnids.png)
 
 之后用共享网络，你的板子就可以上网了。
+
 ![](/1.Docs/3.Images/rnids2.png)
 
 
