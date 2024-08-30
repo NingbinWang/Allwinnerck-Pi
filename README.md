@@ -26,7 +26,7 @@
 - [部分后续工作](#部分后续工作)
 
 # <span id="head1"> 项目简介 </span>
-这个项目是在CherryPi-F1C200S上开发，后续仍会自己设计硬件，目标会将其转换成邮票核心板,底板自行设计一个带摄像头，Gsensor,并带SPI小型屏幕与GPS的核心开发板，支持语音识别功能,并将剩余的GPIO用FPC连接，让极客们自己去设计，增加板子的可玩性。
+这个项目是在CherryPi-F1C200S上开发，目前主要的功能是做一些功能的验证，保证软件的可用性。并在上面实现软件的demo。主要将其设置为IPC网络相机或者是UVC相机，并实现lvgl，gps，gsensor的功能集成。
 
 ## <span id="head2"> 开发板介绍 </span>
 
@@ -149,8 +149,44 @@ Cherry F1C200S采用全志F1C200S ARM926EJ-S内核处理器，片内自带64MB S
 
 内核编译也是同理。
 
+在这里我主要提供了我自己使用的编译脚本：
+编译uboot的build_uboot.sh
+```
+#!/bin/bash
+set -e
+STARTDIR=`pwd`
+SELFDIR=`dirname \`realpath ${0}\``
+UBOOT_DIR=${STARTDIR}/sunxi_uboot
+CROSSCOMPELITE_DIR=${STARTDIR}/gcc-linaro-7.2.1-2017.11-x86_64_arm-linux-gnueabi/bin
+TARGET_CROSS_HOST=arm-linux-gnueabi
+TARGET_CROSS_COMPILE=${CROSSCOMPELITE_DIR}/${TARGET_CROSS_HOST}-
+cd ${UBOOT_DIR}
+make clean CROSS_COMPILE=${TARGET_CROSS_COMPILE}
+cp ./configs/sunvi_f1c200s_defconfig ./.config
+make CROSS_COMPILE=${TARGET_CROSS_COMPILE}
+```
+编译kernel的
+```
+#!/bin/bash
+set -e
+STARTDIR=`pwd`
+SELFDIR=`dirname \`realpath ${0}\``
+UBOOT_DIR=${STARTDIR}/sunxi_kernel
+CROSSCOMPELITE_DIR=${STARTDIR}/gcc-linaro-7.2.1-2017.11-x86_64_arm-linux-gnueabi/bin
+TARGET_CROSS_HOST=arm-linux-gnueabi
+TARGET_CROSS_COMPILE=${CROSSCOMPELITE_DIR}/${TARGET_CROSS_HOST}-
+cd ${UBOOT_DIR}
+#cp ./arch/arm/configs/allwinnerck_pi_defconfig ./.config
+make $1 CROSS_COMPILE=${TARGET_CROSS_COMPILE}
+```
+
 # <span id="head13"> bootloader与kernel的移植 </span>
-此部分主要可以去看4.Firmware中的README，里面会详细介绍整个的移植过程，并且代码都已经开源的。
+这里的移植我基本已经完成，大家可以参考以下代码：
+
+> https://github.com/NingbinWang/sunxi_uboot
+
+> https://github.com/NingbinWang/sunxi_kernel
+
 
 # <span id="head14"> 固件烧录 </span>
 
@@ -165,7 +201,7 @@ Cherry F1C200S采用全志F1C200S ARM926EJ-S内核处理器，片内自带64MB S
 sudo fdisk -l
 ```
 
-若自动挂载了TF设备，先卸载（有多个分区则全部卸载）
+若自动挂载了TF设备，先卸载（有多个分区则全部卸载）,不然无法做分区操作，会显示busy的状态
 
 ```
 sudo umount /dev/sdb1...
@@ -182,7 +218,7 @@ sudo fdisk /dev/sdb
 
 1. 若已存分区即按 d 删除各个分区
 
-2. 通过 n 新建分区，第一分区暂且申请为1M用于储存uboot-with-spl，第二分区32M用于储存Linux内核，剩下的空间都给root-fs
+2. 通过 n 新建分区，第一分区暂且申请为1M用于储存uboot-with-spl，第二分区128M用于储存Linux内核，设备树，驱动等，剩下的空间都给root-fs
 
 	> * **第一分区操作**：p 主分区、默认 1 分区、默认2048、+16M
 	>
@@ -208,17 +244,17 @@ sudo fdisk /dev/sdb
 分区格式化：
 
 ```
-sudo mkfs.vfat /dev/sdb2 # 将第2分区格式化成FAT  
-sudo mkfs.ext4 /dev/sdb3 # 将第3分区格式化成EXT4
+sudo mkfs.vfat /dev/sdb2 # 将第2分区格式化成FAT（linux） 
+sudo mkfs.ext4 /dev/sdb3 # 将第3分区格式化成EXT4（rootfs）
 ```
-这里不需要格式化第一个sdb1，只是为了让uboot可以被烧录
+这里不需要格式化第一个sdb1，因为我只要空出1M的空间就好了
 
 > **格式说明：**
 >
 > * EXT4：只用于Linux系统的内部磁盘
 > * FAT：所有系统和设备共用的磁盘
 
-这里就需要大家将kernel中的设备树放到sdb2中，还有kernel中生成的zImage(在/arch/arm/boot/里面找)也拷贝进去。
+这里就需要大家将kernel中的设备树放到sdb2中，还有kernel中生成的zImage(在/arch/arm/boot/里面找)也拷贝进去，还有生成的ko到drivers目录这里全部拷贝进去
 
 使用dd将`u-boot-sunxi-with-spl.bin`烧写进第一分区：
 
@@ -239,9 +275,9 @@ sync
 
 # <span id="head17"> 构建rootfs </span>
 
-## <span id="head18"> 构建Debian文件系统 </span>
+## <span id="head18"> 构建ubuntu文件系统 </span>
 
-构建文件系统之前，需要知道我们想要构建哪个版本的文件系统，这里从[Debian 全球镜像站](https://www.debian.org/mirror/list.zh-cn.html)选择访问速度快的源，这里使用华为源：mirrors.huaweicloud.com。
+构建文件系统之前，需要知道要构建哪个版本的文件系统，这里从[Debian 全球镜像站](https://www.debian.org/mirror/list.zh-cn.html)选择访问速度快的源，国内就使用华为源：mirrors.huaweicloud.com。也可以是阿里的。
 
 > **注意：**选择的源需要支持硬件架构`armel`，因为F1Cxxxs是`armel`架构的芯片。
 >
@@ -251,10 +287,19 @@ sync
 > - **armhf：**`arm hard float`的缩写，仅适用于较新的 32 位 ARM 处理器，其至少实现了 ARMv7 架构，且支持 ARM 矢量浮点规范（VFPv3）第 3 版
 > - **arm64：**适用于 64 位 ARM 处理器，64位的arm默认就是hf的，其至少实现了 ARMv8 架构
 
-然后就是debian的版本，使用是`buster`：
+然后就是ubuntu的版本，使用是`bullseye`：
 
+起初笔者这里选择的是别人提供的buster，但是在buster这里已经没有armel架构了。
+原来用的命令为：
+
+> debootstrap --foreign --verbose --arch=armel  buster rootfs-debian http://mirrors.huaweicloud.com/debian/
+
+请弃用。
+
+
+现在使用
 ```
-debootstrap --foreign --verbose --arch=armel  buster rootfs-debian http://mirrors.huaweicloud.com/debian/
+debootstrap --foreign --verbose --arch=armel  bullseye rootfs-debian http://mirrors.huaweicloud.com/debian/
 cd rootfs-debian
 sudo mount --bind /dev dev/
 sudo mount --bind /sys sys/
@@ -270,7 +315,7 @@ sudo LC_ALL=C LANGUAGE=C LANG=C chroot rootfs-debian
 此时你就可以进入chroot环境了
 
 ```
-apt install net-tools usbutils ssh
+apt install net-tools usbutils ssh v4l-utils i2c-tools fswebcam
 
 passwd root
 # 修改密码
@@ -353,6 +398,8 @@ insmod usb/gadget/function/usb_f_rndis.ko
 insmod usb/phy/phy-generic.ko
 insmod usb/musb/musb_hdrc.ko
 insmod usb/musb/sunxi.ko
+insmod media/common/videobuf2/videobuf2-vmalloc.ko
+insmod media/i2c/ov5640.ko
 ```
 xxxxx可以将内核中的所有的驱动全部带上
 
@@ -481,6 +528,7 @@ ifconfig usb0 up
 cd /media/xxx/rootfs/
 sudo cp -Rf path/to/rootfs-debian/* ./
 ```
+注意，先把前面的dev proc等umount一下 再复制。
 
 ## <span id="head19"> 使用buildroot构建文件系统 </span>
 目前已经在3.Tools\scripts下提供了createimage.sh的脚本（直接执行即可），可供大家直接生成nand专用的image包，用于DFU的下载，同时在此，提供了最新编译出来的KO等
@@ -490,6 +538,3 @@ sudo cp -Rf path/to/rootfs-debian/* ./
 	1.uboot.env与kernel.its的boot区不要重复了
 	
 这里需要注意建造自己的buildroot的rootfs，可以在firemware中自行解压并使用我的原生的defconfig即可。
-
-# 部分后续工作
-1.支持LCD
