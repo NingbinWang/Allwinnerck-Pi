@@ -23,7 +23,7 @@
 		- [启用swap](#启用swap)
 		- [部署](#部署)
 	- [ 使用buildroot构建文件系统 ](#-使用buildroot构建文件系统-)
-- [部分后续工作](#部分后续工作)
+- [应用开发](#应用开发)
 
 # <span id="head1"> 项目简介 </span>
 这个项目是在CherryPi-F1C200S上开发，目前主要的功能是做一些功能的验证，保证软件的可用性。并在上面实现软件的demo。主要将其设置为IPC网络相机或者是UVC相机，并实现lvgl，gps，gsensor的功能集成。
@@ -315,7 +315,7 @@ sudo LC_ALL=C LANGUAGE=C LANG=C chroot rootfs-debian
 此时你就可以进入chroot环境了
 
 ```
-apt install net-tools usbutils ssh v4l-utils i2c-tools fswebcam
+apt install net-tools usbutils ssh v4l-utils i2c-tools fswebcam gcc make
 
 passwd root
 # 修改密码
@@ -538,3 +538,6 @@ sudo cp -Rf path/to/rootfs-debian/* ./
 	1.uboot.env与kernel.its的boot区不要重复了
 	
 这里需要注意建造自己的buildroot的rootfs，可以在firemware中自行解压并使用我的原生的defconfig即可。
+
+## <span id="head20"> 应用开发 </span>
+讲实话这个芯片巨不好用，如果你是照着前面使用的TF做的文件系统，那么必然要用它自己的gcc编译出来才能用
