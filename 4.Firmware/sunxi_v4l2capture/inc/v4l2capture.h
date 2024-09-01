@@ -63,21 +63,33 @@ struct v4l2_requestbuffers
      __u32 reserved;
  };
 -----------------------------------
+
+
+***************************************/
+#define FRAME_NUM  4//缓冲区内缓冲帧的数目
+#define FRAME_WIDTH 720
+#define FRAME_HEIGHT 480
+#define FRAME_FORMAT V4L2_PIX_FMT_YUYV
+
 struct VideoDevice {
    int iFd;
    int iPixelFormat;
    int iWidth;
    int iHeight;
-   int iVideoBufCnt;
-   int iVideoBufMaxLen;
-   int iVideoBufCurIndex;
-   unsigned char *pucVideBuf[buf_num];
-
-    // 函数 
-    PT_VideoOpr ptOPr;
+   int iVideoBufLen[FRAME_NUM];
+   unsigned char *iVideoBuf[FRAME_NUM];
 };
 
-***************************************/
+struct VideInfo {
+   unsigned int iVideoIndex;
+   int iFormat;
+   int idataWidth;
+   int idataHeight;
+   int iBpp;
+   int iLineBytes;
+   int iTotalBytes;
+   unsigned char *PixelDatas;
+};
 
 
 int init_v4l2capture(const char* dev);

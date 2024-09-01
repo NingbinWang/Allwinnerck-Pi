@@ -55,7 +55,7 @@ all: $(BIN)
 
 $(BIN) : $(OBJS_C) $(OBJS_CPP) checkenv
 	$(Q)echo -e $@
-	$(CC) -o $(OUTPUT_DIR)/$(BIN) ${OBJDIR}/*.o  ${LD_C_FLAGS} -L ${LIB_PATH} -I ${INC_PATH}
+	$(CC) -o $(OUTPUT_DIR)/$(BIN)  ${OBJDIR}/*.o  ${LD_C_FLAGS} -L ${LIB_PATH} -I ${INC_PATH}
 
 $(OBJS_CPP): %.o : %.cpp
 	$(Q)@test -d $(OBJDIR) | mkdir -p $(OBJDIR)

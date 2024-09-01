@@ -540,4 +540,4 @@ sudo cp -Rf path/to/rootfs-debian/* ./
 这里需要注意建造自己的buildroot的rootfs，可以在firemware中自行解压并使用我的原生的defconfig即可。
 
 ## <span id="head20"> 应用开发 </span>
-讲实话这个芯片巨不好用，如果你是照着前面使用的TF做的文件系统，那么必然要用它自己的gcc编译出来才能用
+讲实话这个芯片巨不好用，如果你是照着前面使用的TF做的文件系统,那你所写的程序，需要在它主板上进行编译才行。
