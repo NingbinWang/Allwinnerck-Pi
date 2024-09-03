@@ -22,3 +22,7 @@ if [ "$1" == "all"  ]; then \
     cp ${KERNEL_DIR}/arch/arm/boot/zImage ${MODDIR}/; \
     cp ${KERNEL_DIR}/arch/arm/boot/dts/suniv-f1c100s-generic.dtb ${MODDIR}/; \
 fi
+
+if [ "$1" == "clean"  ]; then \
+    rm  ${MODDIR}/ -rf\
+fi
